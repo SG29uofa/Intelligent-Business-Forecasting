@@ -103,6 +103,14 @@ The final Random Forest model achieved a **6.03% MAPE** on the 76-day held-out t
 
 The packaged Tableau workbook is available in the `Tableau/` directory.
 
+### Forecasting Dashboard
+
+![Intelligent Business Forecasting Dashboard](screenshots/tableau_forecasting_dashboard.png)
+
+### Random Forest vs LSTM
+
+![Random Forest vs LSTM Model Comparison](screenshots/model_comparison.png)
+
 ## Flask Application
 
 I also built a Flask application around the forecasting workflow.
