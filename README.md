@@ -14,7 +14,7 @@ The goal of this project was not simply to build the most complex forecasting mo
 - Does an LSTM neural network improve forecasting performance compared with a traditional machine learning model?
 - How can the forecast be presented in a way that is useful for business users?
 
-The final solution combines model development, model comparison, future forecasting, visualization, and an AI-assisted explanation layer.
+The final solution combines model development, model comparison, future forecasting, visualization, and an AI-assisted explanation layer
 
 ## Dataset
 
