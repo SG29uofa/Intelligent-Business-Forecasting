@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Intelligent Business Forecasting</title>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f4f6f8;
+            color: #222;
+        }
+
+        .header {
+            background: white;
+            padding: 25px 40px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .header h1 {
+            margin: 0;
+            font-size: 30px;
+        }
+
+        .header p {
+            margin: 7px 0 0;
+            color: #666;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 30px auto;
+            padding: 0 20px;
+        }
+
+        .card {
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 25px;
+            margin-bottom: 25px;
+        }
+
+        .card h2 {
+            margin-top: 0;
+        }
+
+        .metrics {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+        }
+
+        .metric {
+            background: #f4f6f8;
+            border-radius: 6px;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .metric-value {
+            display: block;
+            font-size: 28px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .metric-label {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .insight {
+            margin-top: 20px;
+            background: #f4f6f8;
+            padding: 20px;
+            border-radius: 6px;
+        }
+
+        .forecast-chart {
+            margin-top: 20px;
+            background: #ffffff;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            padding: 20px;
+        }
+
+        .chart-container {
+            position: relative;
+            width: 100%;
+            height: 380px;
+        }
+
+        .ai-insight {
+            margin-top: 20px;
+            background: #eef3f8;
+            padding: 20px;
+            border-radius: 6px;
+        }
+
+        .ai-text {
+            white-space: pre-line;
+            line-height: 1.6;
+        }
+
+        @media (max-width: 800px) {
+
+            .metrics {
+                grid-template-columns: 1fr 1fr;
+            }
+
+        }
+
+        @media (max-width: 500px) {
+
+            .metrics {
+                grid-template-columns: 1fr;
+            }
+
+            .header {
+                padding: 20px;
+            }
+
+            .chart-container {
+                height: 300px;
+            }
+
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+    <!-- HEADER -->
+
+    <div class="header">
+
+        <h1>
+            Intelligent Business Forecasting
+        </h1>
+
+        <p>
+            Machine Learning–Driven Sales Forecasting & Decision Support
+        </p>
+
+    </div>
+
+
+    <!-- MAIN CONTENT -->
+
+    <div class="container">
+
+        <div class="card">
+
+            <h2>
+                Forecast Summary
+            </h2>
+
+
+            <!-- KPI CARDS -->
+
+            <div class="metrics">
+
+                <div class="metric">
+
+                    <span class="metric-value">
+                        {{ summary.forecast_days }}
+                    </span>
+
+                    <span class="metric-label">
+                        Forecast Days
+                    </span>
+
+                </div>
+
+
+                <div class="metric">
+
+                    <span class="metric-value">
+                        {{ "{:,.0f}".format(summary.average_forecast) }}
+                    </span>
+
+                    <span class="metric-label">
+                        Average Forecasted Sales
+                    </span>
+
+                </div>
+
+
+                <div class="metric">
+
+                    <span class="metric-value">
+                        {{ "{:,.0f}".format(summary.peak_sales) }}
+                    </span>
+
+                    <span class="metric-label">
+                        Peak Forecasted Sales
+                    </span>
+
+                </div>
+
+
+                <div class="metric">
+
+                    <span class="metric-value">
+                        {{ "{:,.0f}".format(summary.lowest_sales) }}
+                    </span>
+
+                    <span class="metric-label">
+                        Lowest Forecasted Sales
+                    </span>
+
+                </div>
+
+            </div>
+
+
+            <!-- FORECAST WINDOW -->
+
+            <div class="insight">
+
+                <h3>
+                    Forecast Window
+                </h3>
+
+                <p>
+                    Peak forecast date:
+                    <strong>
+                        {{ summary.peak_date }}
+                    </strong>
+                </p>
+
+                <p>
+                    Lowest forecast date:
+                    <strong>
+                        {{ summary.lowest_date }}
+                    </strong>
+                </p>
+
+            </div>
+
+
+            <!-- FORECAST CHART -->
+
+            <div class="forecast-chart">
+
+                <h3>
+                    16-Day Sales Forecast
+                </h3>
+
+                <div class="chart-container">
+
+                    <canvas id="forecastChart"></canvas>
+
+                </div>
+
+            </div>
+
+
+            <!-- AI FORECAST INSIGHT -->
+
+            {% if ai_explanation %}
+
+            <div class="ai-insight">
+
+                <h3>
+                    AI Forecast Insight
+                </h3>
+
+                <div class="ai-text">
+                    {{ ai_explanation }}
+                </div>
+
+            </div>
+
+            {% endif %}
+
+
+        </div>
+
+    </div>
+
+
+    <!-- FORECAST CHART SCRIPT -->
+
+    <script>
+
+        const forecastDates = {{ chart_data.dates | tojson }};
+        const forecastSales = {{ chart_data.sales | tojson }};
+
+        const ctx = document.getElementById("forecastChart");
+
+        new Chart(ctx, {
+
+            type: "line",
+
+            data: {
+
+                labels: forecastDates,
+
+                datasets: [
+
+                    {
+                        label: "Forecasted Sales",
+                        data: forecastSales,
+                        borderWidth: 2,
+                        tension: 0.2,
+                        pointRadius: 4,
+                        pointHoverRadius: 6,
+                        fill: false
+                    }
+
+                ]
+
+            },
+
+            options: {
+
+                responsive: true,
+
+                maintainAspectRatio: false,
+
+                interaction: {
+                    mode: "index",
+                    intersect: false
+                },
+
+                plugins: {
+
+                    legend: {
+                        display: true
+                    },
+
+                    tooltip: {
+
+                        callbacks: {
+
+                            label: function(context) {
+
+                                const value = context.parsed.y;
+
+                                return "Forecasted Sales: " +
+                                    value.toLocaleString();
+
+                            }
+
+                        }
+
+                    }
+
+                },
+
+                scales: {
+
+                    y: {
+
+                        beginAtZero: false,
+
+                        title: {
+                            display: true,
+                            text: "Predicted Sales"
+                        },
+
+                        ticks: {
+
+                            callback: function(value) {
+                                return value.toLocaleString();
+                            }
+
+                        }
+
+                    },
+
+                    x: {
+
+                        title: {
+                            display: true,
+                            text: "Date"
+                        }
+
+                    }
+
+                }
+
+            }
+
+        });
+
+    </script>
+
+
+</body>
+
+</html>
