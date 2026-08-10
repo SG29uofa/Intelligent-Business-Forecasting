@@ -121,6 +121,10 @@ The Flask code is available in:
 
 `src/app.py`
 
+### Application Example
+
+![Flask Forecasting Application](screenshots/flask_forecasting_app.png)
+
 ## AI-Generated Business Explanation
 
 The application includes a local **Llama 3.2** model through Ollama to turn forecast results into a short natural-language explanation.
