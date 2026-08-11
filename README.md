@@ -4,6 +4,12 @@ I built this project to explore how historical sales data can be turned into a p
 
 The project uses historical retail sales to build and evaluate forecasting models, generate future sales forecasts, and present the results through a Tableau dashboard and Flask application. I also tested an LSTM neural network to see whether a deep learning approach could improve on the traditional machine learning model.
 
+### Live Dashboard
+
+View the interactive Tableau dashboard:
+
+[Intelligent Business Forecasting Dashboard](https://public.tableau.com/app/profile/shreyash.ghagare/viz/Intelligent_Business_Forecasting/Dashboard1?publish=yes)
+
 ## Business Problem
 
 Businesses need reliable sales forecasts for decisions such as inventory planning, staffing, budgeting, and resource allocation.
