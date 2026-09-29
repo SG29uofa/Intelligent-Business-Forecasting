@@ -151,6 +151,96 @@ Business-Friendly Explanation
 
 This separation is intentional: Random Forest generates the numerical forecast, while the LLM helps communicate the result in plain language.
 
+## Azure Machine Learning Extension
+
+I extended the original forecasting project into Azure Machine Learning to practice a cloud-based machine learning workflow and model lifecycle.
+
+Instead of training and managing the model only in a local notebook, this implementation uses Azure ML for data access, reproducible training jobs, experiment tracking, model registration, and inference.
+
+### Azure ML Workflow
+
+The cloud workflow is:
+
+Azure Blob Storage  
+↓  
+Azure ML Data Asset  
+↓  
+Azure ML Compute  
+↓  
+Feature Engineering  
+↓  
+Chronological Train/Test Split  
+↓  
+Random Forest Training Job  
+↓  
+Model Evaluation  
+↓  
+Model Registration  
+↓  
+Registered Model Inference
+
+The Azure implementation works with the original store-and-product-family level data rather than the company-wide daily aggregation used in the original forecasting experiment.
+
+### Feature Engineering
+
+The Azure ML model uses:
+
+- Store number
+- Product family
+- Promotion information
+- Calendar features
+- Sales lag features: 1, 7, 14, and 28 days
+- Rolling sales averages: 7 and 28 days
+
+Product family is one-hot encoded before model training. After encoding, the Random Forest uses 45 model features.
+
+To prevent time-series leakage, lag and rolling features are calculated using only previous sales observations.
+
+### Chronological Evaluation
+
+The data is divided chronologically rather than randomly.
+
+- Training period: January 29, 2013 to May 31, 2017
+- Test period: June 1, 2017 to August 15, 2017
+- Test horizon: 76 days
+- Random Forest training sample: 500,000 rows
+
+The Azure ML Random Forest achieved:
+
+| Metric | Result |
+| --- | ---: |
+| MAE | 60.7475 |
+| RMSE | 229.7806 |
+| MAPE | 38.64% |
+
+These metrics should not be compared directly with the 6.03% MAPE from the original company-wide forecasting model because the Azure implementation predicts at the more granular store/product-family level.
+
+### Azure ML Training
+
+The training workflow runs as an Azure ML command job using a managed Scikit-learn environment.
+
+The training script performs feature engineering, chronological splitting, categorical encoding, Random Forest training, evaluation, and model artifact generation.
+
+![Azure ML Training Results](screenshots/azure_ml_training_results.png)
+
+### Model Registration
+
+After successful training, the Random Forest model was saved as a job artifact and registered in the Azure ML model registry as a versioned model.
+
+![Azure ML Registered Model](screenshots/azure_ml_registered_model.png)
+
+### Registered Model Inference
+
+I also created a separate inference job that loads the registered model and executes a prediction using the same Azure ML Scikit-learn environment used for training.
+
+During local notebook testing, the model artifact produced a Scikit-learn version warning because the notebook environment differed from the training environment. Instead of ignoring the warning, inference was moved to the matching Azure ML environment to keep the runtime consistent with model training.
+
+The inference job successfully loaded the registered model, validated the expected 45-feature schema, and generated a prediction.
+
+![Azure ML Registered Model Inference](screenshots/azure_ml_inference.png)
+
+The Azure-specific training and inference scripts are available in the `azure_ml/` directory.
+
 ## Technologies Used
 
 ### Data Science & Machine Learning
@@ -169,6 +259,16 @@ This separation is intentional: Random Forest generates the numerical forecast, 
 - Time-series feature engineering
 - MAE, RMSE, and MAPE evaluation
 
+### Cloud & MLOps
+
+- Microsoft Azure
+- Azure Machine Learning
+- Azure Blob Storage
+- Azure ML Data Assets
+- Azure ML Compute
+- Azure ML Jobs
+- Azure ML Model Registry
+  
 ### Business Intelligence
 
 - Tableau
@@ -194,6 +294,10 @@ This separation is intentional: Random Forest generates the numerical forecast, 
 ```text
 Intelligent_Business_Forecasting/
 │
+├── azure_ml/
+│   ├── train.py
+│   └── predict.py
+│
 ├── data/
 │   ├── raw/
 │   │   ├── holidays_events.csv
@@ -213,6 +317,14 @@ Intelligent_Business_Forecasting/
 │
 ├── notebooks/
 │   └── Business_Forecasting.ipynb
+│
+├── screenshots/
+│   ├── azure_ml_inference.png
+│   ├── azure_ml_registered_model.png
+│   ├── azure_ml_training_results.png
+│   ├── flask_forecasting_app.png
+│   ├── model_comparison.png
+│   └── tableau_forecasting_dashboard.png
 │
 ├── src/
 │   ├── app.py
